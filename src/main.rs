@@ -1,5 +1,6 @@
 use yew::prelude::*;
 use gloo::console::log;
+use gloo_net::http::Request;
 mod books;
 use books::{Book, BooksList};
 
@@ -39,24 +40,25 @@ fn footer() -> Html {
 #[function_component(App)]
 fn app() -> Html {
     let selected_book = use_state(|| None);
-    let books = vec![
-        Book {
-            book_id: 1,
-            title: String::from("The Hobbit"),
-            author: String::from("J.R.R. Tolkien"),
-            categories: String::from("Fantasy"),
-            cover: Vec::new(),
-            pages: 310,
-            progress: 0.0,
-            file_name: String::from("The Hobbit.epub"),
-            description: String::from("Bilbo Baggins is a hobbit who enjoys a comfortable, unambitious life, rarely traveling any farther than his pantry or cellar. But his contentment is disturbed when the wizard Gandalf and a company of dwarves arrive on his doorstep one day to whisk him away on an adventure."),
-            date: String::from("2019-12-01"),
-            rights: String::from("Public Domain"),
-            tags: String::from(""),
-            identifier: String::from(""),
-            publisher: String::from("")
-        }
-    ];
+    let books = use_state(|| vec![]);
+    {
+        let books = books.clone();
+        use_effect_with_deps(move |_| {
+            let books = books.clone();
+            wasm_bindgen_futures::spawn_local(async move {
+                let fetched_books: Vec<Book> = Request::get("http://localhost:8080/books")
+                    .send()
+                    .await
+                    .unwrap()
+                    .json()
+                    .await
+                    .unwrap();
+                log!("{:?}", fetched_books); // Print the response to the console
+                books.set(fetched_books);
+            });
+            || ()
+        }, ());
+    }
     let on_book_select: Callback<Book> = {
         log!("on_book_select");
         let selected_book = selected_book.clone();
@@ -81,7 +83,7 @@ fn app() -> Html {
             <Head />
             <Nav />
             <div class="pysNav-horiz pysNav-main" id="pysNav-Main">
-            <BooksList books={books} on_click={on_book_select.clone()}/>
+            <BooksList books={(*books).clone()} on_click={on_book_select.clone()}/>
             { for details }
             </div>
             <Footer />

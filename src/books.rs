@@ -2,17 +2,17 @@ use yew::prelude::*;
 use serde::{Deserialize, Serialize};
 use base64;
 // use serde_json::json;
-// use serde_bytes::Bytes;
+use serde_bytes::Bytes;
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Book {
-    pub book_id: i32,
+    pub book_id: String,
     pub title: String,
     pub author: String,
     pub categories: String,
     pub cover: Vec<u8>,
-    pub pages: i32,
-    pub progress: f32,
+    pub pages: String,
+    pub progress: String,
     pub file_name: String,
     pub description: String,
     pub date: String,
@@ -25,13 +25,13 @@ pub struct Book {
 impl Default for Book {
     fn default() -> Self {
         Book {
-            book_id: 0,
+            book_id: String::from(""),
             title: String::from(""),
             author: String::from(""),
             categories: String::from(""),
             cover: Vec::new(),
-            pages: 0,
-            progress: 0.0,
+            pages: String::from(""),
+            progress: String::from(""),
             file_name: String::from(""),
             description: String::from(""),
             date: String::from(""),
